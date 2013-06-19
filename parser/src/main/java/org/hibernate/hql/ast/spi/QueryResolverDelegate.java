@@ -23,13 +23,14 @@ package org.hibernate.hql.ast.spi;
 import org.antlr.runtime.tree.Tree;
 import org.hibernate.hql.ast.common.JoinType;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PathedPropertyReferenceSource;
+import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 
 /**
  * Defines hooks for implementing custom logic when walking the parse tree of a JPQL query.
  *
  * @author Gunnar Morling
  */
-public interface QueryParserDelegate<T> {
+public interface QueryResolverDelegate {
 
 	void registerPersisterSpace(Tree entityName, Tree alias);
 
@@ -43,7 +44,7 @@ public interface QueryParserDelegate<T> {
 
 	PathedPropertyReferenceSource normalizeQualifiedRoot(Tree identifier381);
 
-	PathedPropertyReferenceSource normalizePropertyPathIntermediary(PathedPropertyReferenceSource source, Tree propertyName);
+	PathedPropertyReferenceSource normalizePropertyPathIntermediary(PropertyPath path, Tree propertyName);
 
 	PathedPropertyReferenceSource normalizeIntermediateIndexOperation(PathedPropertyReferenceSource propertyReferenceSource, Tree collectionProperty,
 			Tree selector);
@@ -52,7 +53,7 @@ public interface QueryParserDelegate<T> {
 
 	PathedPropertyReferenceSource normalizeUnqualifiedPropertyReferenceSource(Tree identifier394);
 
-	Tree normalizePropertyPathTerminus(PathedPropertyReferenceSource source, Tree propertyNameNode);
+	PathedPropertyReferenceSource normalizePropertyPathTerminus(PropertyPath path, Tree propertyNameNode);
 
 	void pushFromStrategy(JoinType joinType, Tree assosiationFetchTree, Tree propertyFetchTree, Tree alias);
 
@@ -60,22 +61,10 @@ public interface QueryParserDelegate<T> {
 
 	void popStrategy();
 
-	void activateOR();
-
-	void activateAND();
-
-	void activateNOT();
-
-	void deactivateBoolean();
-
-	void predicateEquals(String comparativePredicate);
-
-	void predicateBetween(String lower, String upper);
-
 	/**
-	 * Returns the result created by this delegate after the tree processing has been finished.
+	 * Notifies this delegate when parsing of a property path in the SELECT or WHERE is completed.
 	 *
-	 * @return the result created by this delegate after the tree processing has been finished
+	 * @param path the completely parsed property path
 	 */
-	T getResult();
+	void propertyPathCompleted(PropertyPath path);
 }

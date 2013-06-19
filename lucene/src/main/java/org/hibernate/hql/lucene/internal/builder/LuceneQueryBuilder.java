@@ -20,9 +20,12 @@
  */
 package org.hibernate.hql.lucene.internal.builder;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Stack;
 
 import org.apache.lucene.search.Query;
+import org.hibernate.hql.internal.util.Strings;
 import org.hibernate.hql.lucene.internal.builder.predicate.ConjunctionPredicate;
 import org.hibernate.hql.lucene.internal.builder.predicate.DisjunctionPredicate;
 import org.hibernate.hql.lucene.internal.builder.predicate.EqualsPredicate;
@@ -31,8 +34,6 @@ import org.hibernate.hql.lucene.internal.builder.predicate.ParentPredicate;
 import org.hibernate.hql.lucene.internal.builder.predicate.Predicate;
 import org.hibernate.hql.lucene.internal.builder.predicate.RangePredicate;
 import org.hibernate.hql.lucene.internal.builder.predicate.RootPredicate;
-import org.hibernate.hql.lucene.internal.logging.Log;
-import org.hibernate.hql.lucene.internal.logging.LoggerFactory;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.QueryContextBuilder;
 
@@ -45,8 +46,6 @@ import org.hibernate.search.query.dsl.QueryContextBuilder;
  * @author Gunnar Morling
  */
 public class LuceneQueryBuilder {
-
-	private static Log log = LoggerFactory.make();
 
 	private final QueryContextBuilder queryContextBuilder;
 	private final PropertyHelper propertyHelper;
@@ -87,29 +86,27 @@ public class LuceneQueryBuilder {
 		return this;
 	}
 
-	public LuceneQueryBuilder addEqualsPredicate(String propertyName, Object value) {
-		assertPropertyIsNotAnalyzed( propertyName );
+	public LuceneQueryBuilder addEqualsPredicate(String property, Object value) {
+		return addEqualsPredicate( Arrays.asList( property ), value );
+	}
 
-		Object typedValue = propertyHelper.convertToPropertyType( value, entityType, propertyName );
-		pushPredicate( new EqualsPredicate( queryBuilder, propertyName, typedValue ) );
+	public LuceneQueryBuilder addEqualsPredicate(List<String> propertyPath, Object value) {
+		Object typedValue = propertyHelper.convertToPropertyType( value, entityType, propertyPath );
+		pushPredicate( new EqualsPredicate( queryBuilder, Strings.join( propertyPath, "." ), typedValue ) );
 
 		return this;
 	}
 
-	public LuceneQueryBuilder addRangePredicate(String propertyName, Object lower, Object upper) {
-		assertPropertyIsNotAnalyzed( propertyName );
-
-		Object lowerValue = propertyHelper.convertToPropertyType( lower, entityType, propertyName );
-		Object upperValue = propertyHelper.convertToPropertyType( upper, entityType, propertyName );
-		pushPredicate( new RangePredicate( queryBuilder, propertyName, lowerValue, upperValue ) );
-
-		return this;
+	public LuceneQueryBuilder addRangePredicate(String property, Object lower, Object upper) {
+		return addRangePredicate( Arrays.asList( property ), lower, upper );
 	}
 
-	private void assertPropertyIsNotAnalyzed(String propertyName) {
-		if ( propertyHelper.isAnalyzed( entityType, propertyName ) ) {
-			throw log.getQueryOnAnalyzedPropertyNotSupportedException( entityType.getCanonicalName(), propertyName );
-		}
+	public LuceneQueryBuilder addRangePredicate(List<String> propertyPath, Object lower, Object upper) {
+		Object lowerValue = propertyHelper.convertToPropertyType( lower, entityType, propertyPath );
+		Object upperValue = propertyHelper.convertToPropertyType( upper, entityType, propertyPath );
+		pushPredicate( new RangePredicate( queryBuilder, Strings.join( propertyPath, "." ), lowerValue, upperValue ) );
+
+		return this;
 	}
 
 	public LuceneQueryBuilder pushAndPredicate() {
@@ -144,6 +141,7 @@ public class LuceneQueryBuilder {
 
 	/**
 	 * Returns the Lucene query created by this builder.
+	 *
 	 * @return the Lucene query created by this builder
 	 */
 	public Query build() {

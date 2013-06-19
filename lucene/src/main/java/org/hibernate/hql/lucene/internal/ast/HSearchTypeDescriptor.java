@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,42 +18,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.hql.ast.origin.hql.resolve.path;
+package org.hibernate.hql.lucene.internal.ast;
 
 import org.hibernate.hql.ast.TypeDescriptor;
 
 /**
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
+ * A {@link TypeDescriptor} backed by HSearch type meta-data.
+ *
+ * @author Gunnar Morling
  */
-public final class PathedPropertyReference implements PathedPropertyReferenceSource {
+public interface HSearchTypeDescriptor extends TypeDescriptor {
 
-	private final String name;
-	private final TypeDescriptor type;
-	private final boolean alias;
+	/**
+	 * Returns the Java type of the represented indexed entity.
+	 *
+	 * @return the Java type of the represented indexed entity
+	 */
+	Class<?> getIndexedEntityType();
 
-	public PathedPropertyReference(String name, TypeDescriptor type, boolean alias) {
-		this.name = name;
-		this.type = type;
-		this.alias = alias;
-	}
+	/**
+	 * Whether the given property of this indexed entity is analyzed or not.
+	 *
+	 * @param propertyName the name of the property
+	 * @return {@code true} if the given property is analyed, {@code false} otherwise.
+	 */
+	boolean isAnalyzed(String propertyName);
 
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	public TypeDescriptor getType() {
-		return type;
-	}
-
-	@Override
-	public boolean isAlias() {
-		return alias;
-	}
-
-	@Override
-	public String toString() {
-		return name;
-	}
+	/**
+	 * Whether the given property denotes an embedded entity or not.
+	 *
+	 * @param propertyName the name of the property
+	 * @return {@code true} if the given property denotes an entity embedded into this one, {@code false} otherwise.
+	 */
+	boolean isEmbedded(String propertyName);
 }

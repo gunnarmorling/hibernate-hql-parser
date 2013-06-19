@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,15 +18,39 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.hql.ast.origin.hql.resolve.path;
+package org.hibernate.hql.internal.util;
 
-import org.hibernate.hql.ast.TypeDescriptor;
+import java.util.Arrays;
 
-public interface PathedPropertyReferenceSource {
+/**
+ * Helper class for dealing with strings.
+ *
+ * @author Gunnar Morling
+ */
+public class Strings {
 
-	String getName();
+	private Strings() {
+	}
 
-	TypeDescriptor getType();
+	public static String join(String[] strings, String separator) {
+		return join( Arrays.asList( strings ), separator );
+	}
 
-	boolean isAlias();
+	public static String join(Iterable<String> iterable, String separator) {
+		StringBuilder sb = new StringBuilder();
+		boolean isFirst = true;
+
+		for ( String object : iterable ) {
+			if ( !isFirst ) {
+				sb.append( separator );
+			}
+			else {
+				isFirst = false;
+			}
+
+			sb.append( object );
+		}
+
+		return sb.toString();
+	}
 }
